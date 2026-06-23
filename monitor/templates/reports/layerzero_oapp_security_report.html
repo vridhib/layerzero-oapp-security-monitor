@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>LayerZero OApp Security Report</title>
+        <style>
+            @page {
+                size: A4;
+                margin: 2cm;
+            } * { box-sizing: border-box; margin: 0; padding: 0; }
+
+            body {
+                font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                color: #1a1a1a;
+                line-height: 1.5;
+                background: #fff;
+                margin: 0;
+            }
+
+            .header {
+                border-bottom: 3px solid #2b4c7e;
+                padding-bottom: 25px;
+                margin-bottom: 35px;
+            }
+            .header h1 { font-size: 32px; font-weight: 700; color: #2b4c7e; margin-bottom: 5px; }
+            .header p { font-size: 15px; color: #555; }
+
+            h2 {
+                font-size: 22px;
+                color: #2b4c7e;
+                margin: 35px 0 20px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #e0e0e0;
+                page-break-after: avoid;      
+            }
+
+            .section {
+                page-break-inside: avoid;      /* keep h2 + table together */
+            }
+
+            /* Summary Cards */
+            .summary-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 18px;
+                margin-bottom: 10px;
+            }
+            .stat-card {
+                background: #f7f9fc;
+                border: 1px solid #e5e9f0;
+                border-radius: 10px;
+                padding: 20px 22px;
+                text-align: center;
+                flex: 1 1 160px;
+                min-width: 140px;
+            }
+            .stat-number { font-size: 38px; font-weight: 800; line-height: 1.2; }
+            .stat-label { font-size: 13px; color: #5e6f8d; margin-top: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px; }
+
+            .risk-critical { color: #c0392b; }
+            .risk-warning { color: #d35400; }
+            .risk-safe { color: #27ae60; }
+            .risk-info { color: #2b4c7e; }
+
+            /* Tables */
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 15px 0 30px;
+                font-size: 14px;
+                table-layout: fixed;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                /* page-break-inside: avoid; */
+                page-break-before: avoid;
+            }
+
+            th {
+                background: #2b4c7e;
+                color: white;
+                padding: 12px 10px;
+                text-align: left;
+                font-weight: 600;
+                letter-spacing: 0.3px;
+            }
+
+            td {
+                padding: 10px 10px;
+                border-bottom: 1px solid #e9ecf1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            tr:nth-child(even) td { background: #f9fafb; }
+            tr:hover td { background: #edf2f9; }   /* browser only, ignored by PDF */
+
+            .grade {
+                display: inline-block;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-weight: 700;
+                font-size: 13px;
+            }
+            .grade-A { background: #d4edda; color: #155724; }
+            .grade-B { background: #fff3cd; color: #856404; }
+            .grade-C { background: #ffeaa7; color: #856404; }
+            .grade-D, .grade-F { background: #f8d7da; color: #721c24; }
+
+            .footer {
+                margin-top: 50px;
+                padding-top: 25px;
+                border-top: 2px solid #dde2e8;
+                font-size: 12px;
+                color: #7a8a9e;
+                display: flex;
+                justify-content: space-between;
+            }
+            .footer p { margin: 4px 0; }
+
+            .eid-table td:first-child { font-weight: 600; width: 120px; }
+        </style>
+    </head>
+
+    <body>
+        <!-- Header -->
+        <div class="header">
+            <h1>LayerZero OApp Security Report</h1>
+            <p>Generated: <strong>{{ generated_at }}</strong></p>
+            <p>Multi-DVN Mandate Monitor · Automated security assessment</p>
+        </div>
+
+        <!-- Executive Summary -->
+        <h2>Executive Summary</h2>
+        <div class="summary-grid">
+            <div class="stat-card">
+                <div class="stat-number risk-info">{{ summary.total_oapps }}</div>
+                <div class="stat-label">OApps Scanned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number risk-critical">{{ summary.unhealthy }}</div>
+                <div class="stat-label">Unhealthy Configs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number risk-warning">{{ summary.eoa_owner_risk }}</div>
+                <div class="stat-label">EOA Owner Risk</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number risk-warning">{{ summary.proxy_admin_risk }}</div>
+                <div class="stat-label">Proxy Admin Risk</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number risk-warning">{{ summary.oracle_stale }}</div>
+                <div class="stat-label">Stale Oracle</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number risk-critical">{{ summary.exposed_1_of_1 }}</div>
+                <div class="stat-label">1-of-1 DVN Exposure</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number risk-warning">{{ summary.centralized }}</div>
+                <div class="stat-label">Centralized Configs</div>
+            </div>
+        </div>
+
+        <!-- Remote Endpoint Coverage -->
+        <div class="section">
+            {% if summary.by_remote_eid %}
+            <h2>Remote Endpoint Coverage</h2>
+            <table class="eid-table">
+                <thead>
+                    <tr>
+                        <th>Remote EID</th>
+                        <th>Configs Scanned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eid, count in summary.by_remote_eid.items %}
+                    <tr>
+                        <td>{{ eid }}</td>
+                        <td>{{ count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+
+        <!-- Critical Issues -->
+        <div class="section">
+            <h2>Critical Issues</h2>
+            {% if critical_issues %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Contract / Name</th>
+                        <th>Chain</th>
+                        <th>Remote EID</th>
+                        <th>Risk Score</th>
+                        <th>Grade</th>
+                        <th>Issues</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for issue in critical_issues %}
+                    <tr>
+                        <td><strong>{{ issue.name|default:issue.contract|truncatechars:16 }}</strong></td>
+                        <td>{{ issue.chain }}</td>
+                        <td>{{ issue.remote_eid }}</td>
+                        <td
+                            class="risk-{% if issue.risk_score < 40 %}critical{% elif issue.risk_score < 60 %}warning{% else %}safe{% endif %}">
+                            {{ issue.risk_score }}
+                        </td>
+                        <td>
+                            <span class="grade grade-{{ issue.grade|slice:" :1" }}">{{ issue.grade }}</span>
+                        </td>
+                        <td>{{ issue.risk_notes|truncatechars:60 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color:#27ae60;">No critical issues found.</p>
+            {% endif %}
+        </div>
+
+        <!-- Breakdown by Source Chain -->
+        <div class="section">
+            <h2>Risk Breakdown by Chain</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Chain</th>
+                        <th>Remote EID</th>
+                        <th>Total</th>
+                        <th>Unhealthy</th>
+                        <th>EOA Risk</th>
+                        <th>Proxy Risk</th>
+                        <th>Stale Oracle</th>
+                        <th>Centralized</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for chain, data in by_chain.items %}
+                    <tr>
+                        <td><strong>{{ chain }}</strong></td>
+                        <td>{{ data.remote_eid|default:"—" }}</td>
+                        <td>{{ data.total }}</td>
+                        <td class="{% if data.unhealthy %}risk-critical{% else %}risk-safe{% endif %}">
+                            {{ data.unhealthy }}
+                        </td>
+                        <td>{{ data.eoa_owner_risk|default:"0" }}</td>
+                        <td>{{ data.proxy_admin_risk|default:"0" }}</td>
+                        <td>{{ data.oracle_stale|default:"0" }}</td>
+                        <td>{{ data.centralized|default:"0" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>
+                <p><strong>Multi-DVN Mandate Monitor</strong></p>
+                <p>Report generated: {{ generated_at }}</p>
+            </div>
+            <div style="text-align:right;">
+                <p>Data source: on-chain scanning via LayerZero metadata</p>
+                <p>This report is machine-generated.</p>
+            </div>
+        </div>
+    </body>
+</html>
