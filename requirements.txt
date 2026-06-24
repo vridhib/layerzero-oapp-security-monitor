@@ -79,3 +79,7 @@ webencodings==0.5.1
 websockets==15.0.1
 yarl==1.24.2
 zopfli==0.4.3
+# gunicorn==23.0.0                # Production WSGI server
+# whitenoise==6.9.0               # Static file serving
+# django-storages==1.14.4         # R2 storage backend
+# dj-database-url==2.3.0          # Database URL configuration
