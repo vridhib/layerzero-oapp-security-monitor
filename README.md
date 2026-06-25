@@ -13,8 +13,8 @@
   - [The KelpDAO Incident](#the-kelpdao-incident)
   - [The Scale of the Problem](#the-scale-of-the-problem)
   - [LayerZero's Response](#layerzeros-response)
-  - [Why This Tool Exists](#why-this-tool-exists)
-- [Links \& References](#links--references)
+  - [Solution this Monitoring Tool Offers](#solution-this-monitoring-tool-offers)
+  - [Live Demo](#live-demo)
 - [Diagrams \& Visuals](#diagrams--visuals)
   - [Risk Calculation Diagram](#risk-calculation-diagram)
   - [UI Screenshots](#ui-screenshots)
@@ -23,8 +23,6 @@
 - [Technical Stack](#technical-stack)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
-    - [For Only Viewing the Frontend Locally](#for-only-viewing-the-frontend-locally)
-    - [To Optionally Deploy the Backend Yourself](#to-optionally-deploy-the-backend-yourself)
   - [Clone the Repository](#clone-the-repository)
   - [View the Frontend](#view-the-frontend)
 - [Backend Setup](#backend-setup)
@@ -38,13 +36,13 @@
 
 ## Overview 
 
-This LayerZero OApp Security Monitor is a full‑stack tool that monitors Decentralized Verifier Network (DVN) configurations for LayerZero OApps. It detects dangerous 1‑of‑1 DVN setups, centralization risks, low‑confirmation finality attacks, EOA owner risks, vulnerable proxy and timelock configurations as well as stale oracles. The system includes a Django backend, a Next.js frontend, user authentication, alert channels (Discord), security reports, and a public suggestion form.
+This LayerZero OApp Security Monitor is a full‑stack tool that monitors Decentralized Verifier Network (DVN) configurations for LayerZero OApps. It detects dangerous 1‑of‑1 DVN setups, centralization risks, low‑confirmation finality attacks, EOA owner risks, vulnerable proxy and timelock configurations as well as stale oracles. The system includes a Django backend, a Next.js frontend, user authentication, alert channels (currently only Discord), security reports, and a public suggestion form.
 
 
 ## Features
 
-- **Automated OApp Scanning**: Fetches the `UlnConfig` via LayerZero EndpointV2 on multiple chains (Ethereum, Arbitrum, Optimism, BSC, and Base).
-- **Risk Scoring**: Computes a score (0‑100) and grade (A‑F) based on `requiredDVNCount`, optional thresholds, provider diversity, and confirmations.
+- **Automated OApp Scanning**: Fetches the `UlnConfig` via LayerZero EndpointV2 on multiple chains (Ethereum, Arbitrum, BSC, and Base).
+- **Risk Scoring**: Computes a score (0‑100) and grade (A‑F) based on `requiredDVNCount`, optional DVN thresholds, provider diversity, and confirmations.
 - **User Accounts**: Register, login (JWT), manage monitored OApps, and configure alert channels (Discord webhook).
 - **Public Monitor**: View all scanned configs with pagination, filters, and search.
 - **Public OApp Submission**: Anyone can suggest an OApp to be scanned (rate‑limited to 10/hour per IP).
@@ -58,7 +56,7 @@ This LayerZero OApp Security Monitor is a full‑stack tool that monitors Decent
 
 On April 18, 2026, KelpDAO suffered a $292 million exploit via LayerZero's messaging infrastructure. The attackers forged a cross-chain message that drained rsETH from KelpDAO's LayerZero bridge. This was due to an insecure 1-of-1 DVN (Decentralized Verifier Network) configuration (the minimum security setting) in which a single validator approval was required to execute cross-chain transactions.
 
-LayerZero later [confirmed](https://layerzero.network/blog/kelpdao-incident-statement) that applications using multi-DVN configurations (`requiredDVNCount >= 2`) were not affected and could confidently resume operations. They also announced they will no longer sign or attest messages from applications using 1/1 configurations, effectively deprecating the minimum security setup.
+LayerZero later [confirmed](https://layerzero.network/blog/kelpdao-incident-statement) that applications using multi-DVN configurations (`requiredDVNCount >= 2`) were not affected and could confidently resume operations. They also announced that they will no longer sign or attest messages from applications using 1-of-1 configurations, effectively deprecating the minimum security setup.
 
 ### The Scale of the Problem
 
@@ -70,7 +68,7 @@ LayerZero later [confirmed](https://layerzero.network/blog/kelpdao-incident-stat
 | 2-of-2 | 45% | ~1,199 |
 | 3-of-3 or higher | ~5% | ~133 |
 
-This means 1,252 projects, representing over $4.5 billion in associated market value, remain exposed to the same class of risk that enabled the KelpDAO hack.
+This means that 1,252 projects, representing over $4.5 billion in associated market value, remain exposed to the same risk as the KelpDAO hack.
 
 ### LayerZero's Response
 
@@ -78,7 +76,7 @@ In response to the incident, LayerZero has [effectively deprecated 1-of-1 config
 
 However, until projects actively choose to migrate to multi-DVN setups, and for any OApps that manually configure risky settings, the exposure risk persists. The 1-of-1 configuration is still the default for new deployments, and existing OApps will not automatically upgrade.
 
-### Why This Tool Exists
+### Solution this Monitoring Tool Offers
 
 The KelpDAO hack proved that configuration is the weakest link in cross-chain security. LayerZero's own policy change confirms that 1-of-1 setups are unacceptable. This scanner provides:
 
@@ -87,12 +85,17 @@ The KelpDAO hack proved that configuration is the weakest link in cross-chain se
 - **Continuous monitoring** with alerts when configurations become unhealthy
 - **Public transparency** so the entire ecosystem can see which protocols are secure
 
-By catching these vulnerabilities before they're exploited (or before LayerZero's policy effectively halts their operations) this tool helps projects stay secure and compliant.
+By catching these vulnerabilities before they are exploited (or before LayerZero's policy effectively halts their operations) this tool helps protocols stay secure and compliant.
 
 
-## Links & References
-[Vercel Deployment Link](PLACEHOLDER)
+### Live Demo
 
+This project is fully functional and can be run locally. To see it in action:
+
+- **Frontend**: Deployed at [Vercel](https://layerzero-oapp-security-monitor.vercel.app); the backend is not deployed, so it connects to a local server.
+- **Video Walkthrough**: [Watch the full demo here](https://drive.proton.me/urls/N4MT8DV5VC#aou1RquPrOzq)
+
+> **Note**: The backend is not currently deployed to a public server. To run the full application locally, follow the [Getting Started](#getting-started) instructions below.
 
 ## Diagrams & Visuals
 
@@ -158,22 +161,21 @@ flowchart TD
 
 ## Future Extensions
 
-Due to time constraints, the MVP focused on LayerZero. Planned extensions include:
+Due to time constraints, this MVP focused on LayerZero. Planned extensions include:
 
-- **Multi‑protocol Support**: adapt the scanner to CCIP (check DON signer thresholds), Wormhole (guardian set size), and Axelar (validator changes). The core risk of a single verifier is universal.
+- **Multi‑protocol Support**: adapt the scanner to CCIP (check DON signer thresholds), Wormhole (guardian set size), and Axelar (validator changes) as the core risk of a single verifier is universal.
 - **Email Alerts**: integrate Resend for email notifications.
-- **Historical Trends**: store configuration changes over time to visualise risk evolution.
+- **Historical Trends**: store configuration changes over time to visualize risk evolution.
 - **Slack/Telegram Notifications**:  additional alert channels.
 - **On‑chain Metrics**: track `requiredDVNCount` changes via events.
 
 
 ## Architecture
 
-**Backend**: Django + Django REST Framework + djoser (JWT)
+**Backend**: Django + Django REST Framework (DRF) + djoser (JWT)
 **Database**: SQLite (development), PostgreSQL (production)
-**Scanner**: Custom management command (scan_bridges) +  GitHub Actions
+**Scanner**: Custom management command (scan_bridges)
 **Frontend**: Next.js (App Router) + TailwindCSS
-**Deployment**: Backend on Render/Railway, Frontend on Vercel
 
 
 ## Technical Stack
@@ -189,14 +191,9 @@ Due to time constraints, the MVP focused on LayerZero. Planned extensions includ
 
 ## Getting Started
 
-To only view the monitor without cloning the repository, visit this link: PLACEHOLDER.
-
 ### Prerequisites
 
-#### For Only Viewing the Frontend Locally
 - Node.js (v18+) and npm
-
-#### To Optionally Deploy the Backend Yourself
 - Python 3.11+
 - Redis (for rate limiting) 
 - A .env file
@@ -211,7 +208,7 @@ cd layerzero-oapp-security-monitor
 
 ### View the Frontend
 
-Open a terminal and run the following commands:
+Navigate to https://layerzero-oapp-security-monitor.vercel.app or open a terminal and run the following commands:
 ```bash
 cd frontend
 npm install
@@ -219,7 +216,6 @@ npm run dev
 ```
 
 Now, open http://localhost:3000 to view the monitor.
-
 
 ## Backend Setup
 
@@ -235,23 +231,23 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 For local development, use SQLite. In `backend/settings.py`, comment out PostgreSQL and uncomment SQLite:
 
 ```py
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('DB_NAME', 'layerzero_monitor'),
-#         'USER': os.getenv('DB_USER'),
-#         'PASSWORD': os.getenv('DB_PASSWORD'),
-#         'HOST': os.getenv('DB_HOST', 'localhost'),
-#         'PORT': os.getenv('DB_PORT', '5432'),
+# if not DATABASES['default']:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': os.getenv('DB_NAME', 'layerzero_monitor'),
+#             'USER': os.getenv('DB_USER'),
+#             'PASSWORD': os.getenv('DB_PASSWORD'),
+#             'HOST': os.getenv('DB_HOST', 'localhost'),
+#             'PORT': os.getenv('DB_PORT', '5432'),
+#         }
 #     }
-# }
 
-DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.sqlite3',
-         'NAME': BASE_DIR / 'db.sqlite3',
-     }
- }
+ if not DATABASES['default'].get('ENGINE'):
+     DATABASES['default'] = {
+             'ENGINE': 'django.db.backends.sqlite3',
+             'NAME': BASE_DIR / 'db.sqlite3'
+         }
 ```
 
 ### 3. Set environment variables
@@ -262,7 +258,7 @@ Copy .env.example to .env:
 cp .env.example .env
 ```
 
-Add your RPC URLs and Django secret key::
+Add your RPC URLs and Django secret key:
 ```bash
 # Blockchain RPC URLs
 ETH_RPC=
@@ -313,4 +309,4 @@ python manage.py runserver
 
 
 ## License
-This project is licensed under the MIT License. See the [full license text](https://opensource.org/licenses/MIT) for details.
+This project is licensed under the MIT License. See the [full license text](/LICENSE) for details.
