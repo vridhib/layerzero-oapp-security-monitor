@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'django_ratelimit',
-    # 'storages',
+    #'storages',
     'monitor',
 ]
 
@@ -117,7 +117,7 @@ DATABASES = {
 }
 
 # Fallback for local development
-if not DATABASES['default']['ENGINE']:
+if not DATABASES['default']:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -154,13 +154,13 @@ CACHES = {
 # ------------------------------------------------------------
 #  Static & Media Files
 # ------------------------------------------------------------
-# STATIC_URL = '/static/'
-# STATIC_ROOT = BASE_DIR / 'staticfiles'
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 USE_S3 = os.getenv('USE_S3', 'False') == 'True'
 if USE_S3:
-    # Cloudflar R2 configuration
+    # Cloudflare R2 configuration
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
