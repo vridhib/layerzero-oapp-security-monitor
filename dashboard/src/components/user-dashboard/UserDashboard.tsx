@@ -8,6 +8,7 @@ import { HealthBadge } from './HealthBadge';
 import { SUPPORTED_CHAINS } from '@/lib/constants';
 import { toTitleCase } from '@/utils/helperFunctions';
 import { MonitoredOApp } from '@/types';
+import { isAddress } from 'viem';
 
 
 /**
@@ -66,15 +67,25 @@ export default function UserDashboard() {
   const handleAdd = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!isAddress(address)) {
+      setError('Invalid Ethereum address');
+      return;
+    }
+
     setAdding(true);
     try {
       await api.post('/monitored-oapps/', { address, chain, name });
       setAddress('');
       setName('');
       await fetchMonitered();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to add OApp');
-    } finally {
+    } 
+    catch (err: any) {
+      const data = err.response?.data
+      const errMessage = data.non_field_errors || 'Failed to add OApp'
+      setError(errMessage);
+    } 
+    finally {
       setAdding(false);
     }
   };

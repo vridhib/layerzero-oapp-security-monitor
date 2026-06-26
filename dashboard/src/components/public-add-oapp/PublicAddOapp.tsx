@@ -37,9 +37,12 @@ export default function PublicAddOApp() {
 
 
   useEffect(() => {
-    if (message) setMessage(null);
+    if (message && message.type == 'error') {
+      setMessage(null);
+    }
   }, [address]);
 
+  
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -59,14 +62,18 @@ export default function PublicAddOApp() {
     catch (err: any) {
       if (err.response?.status === 429) {
         setMessage({ type: 'error', text: 'Too many submissions from this IP. Try again later.' });
-      } else {
-        setMessage({ type: 'error', text: err.response?.data?.error || 'Failed to add OApp' });
+      } 
+      else {
+        const data = err.response?.data;
+        const errorMessage = data?.address?.[0] || 'Failed to add OApp';
+        setMessage({ type: 'error', text: errorMessage });
       }
     }
     finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-indigo-950 flex items-center justify-center px-4 py-10">
