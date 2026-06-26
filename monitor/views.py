@@ -8,7 +8,6 @@ from .models import BridgeContract, DVNConfig, MonitoredOApp, UserAlertChannel, 
 from .serializers import BridgeContractSerializer, DVNConfigSerializer, MonitoredOappSerializer, UserAlertChannelSerializer, ReportSerializer
 
 
-
 class BridgeContractViewSet(viewsets.ModelViewSet):
     queryset = BridgeContract.objects.all()
     serializer_class = BridgeContractSerializer
@@ -77,10 +76,13 @@ class ReportViewSet(viewsets.ReadOnlyModelViewSet):
 @ratelimit(key='ip', rate='10/h', method='POST')
 def public_add_oapp(request):
     if getattr(request, 'limited', False):
-        return Response({'error': 'Too many submissions from this IP. Try again later'}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+        return Response(
+            {'error': 'Too many submissions from this IP. Try again later'}, 
+            status=status.HTTP_429_TOO_MANY_REQUESTS)
     
     serializer = BridgeContractSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(source='user')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -17,6 +17,7 @@ class BridgeContract(models.Model):
     def __str__(self):
         return f"{self.name or self.address[:10]} on {self.chain} ({self.source})"
     
+    
 class DVNConfig(models.Model):
     contract = models.ForeignKey(BridgeContract, on_delete=models.CASCADE)
     remote_eid = models.IntegerField()
@@ -24,7 +25,7 @@ class DVNConfig(models.Model):
     optional_dvn_threshold = models.IntegerField(default=0)
     optional_dvn_count = models.IntegerField(default=0)
     required_dvns = models.JSONField(default=list)   # list of addresses
-    optional_dvns = models.JSONField(default=list)
+    optional_dvns = models.JSONField(default=list)   # list of addresses
     confirmations = models.IntegerField(default=0)
     is_exposed = models.BooleanField(default=True)
     is_centralized = models.BooleanField(default=True)
